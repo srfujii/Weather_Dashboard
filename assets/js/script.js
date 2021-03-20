@@ -76,10 +76,13 @@ function displayCurrentWeather (nameOfCity, currentWeather, dailyUVI) {
     var divContainerEl = document.querySelector('#currentWeather');
     divContainerEl.innerHTML = "";  // Clear out before display new information
 
+    var divCardEl = document.createElement('div');
+    divCardEl.classList = 'card';
+
     var divCardBodyEl = document.createElement('div');
     divCardBodyEl.classList = 'card-body';
 
-    var cityNameDateEl = document.createElement('h5');
+    var cityNameDateEl = document.createElement('h3');
     cityNameDateEl.classList = 'card-title';
     var today = moment().format("MM/DD/YY");
     cityNameDateEl.textContent = nameOfCity + " (" + today + ")";
@@ -113,7 +116,8 @@ function displayCurrentWeather (nameOfCity, currentWeather, dailyUVI) {
     }
     uvColorEl.textContent = dailyUVI;
 
-    divContainerEl.appendChild(divCardBodyEl);
+    divContainerEl.appendChild(divCardEl);
+    divCardEl.appendChild(divCardBodyEl);
     divCardBodyEl.appendChild(cityNameDateEl);
     cityNameDateEl.appendChild(imgIconEl);
     divCardBodyEl.appendChild(temperatureEl);
@@ -143,10 +147,10 @@ function displayFiveDayForecast (dailyWeatherArray) {
         outerDivEl.classList = 'col';
         
         var divCardEl = document.createElement('div');
-        divCardEl.classList = 'card bg-blue fiveDayWidth';
+        divCardEl.classList = 'card fiveDayWidth';
 
         var divCardBodyEl = document.createElement('div');
-        divCardBodyEl.classList = 'card-body';
+        divCardBodyEl.classList = 'card-body bg-primary text-white';
 
         var h5DateEl = document.createElement('h5');
         h5DateEl.classList = 'card-title';

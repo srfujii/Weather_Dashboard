@@ -48,7 +48,9 @@ function getWeatherData (cityName) {
                     .then(function (response) {
                     if (response.ok) {
                         response.json().then(function (data) {
+                            console.log(data);
                             displayCurrentWeather(cityName, data.current, data.daily[0].uvi);
+                            displayFiveDayForecast(data.daily);
                         });
                     } else {
                         alert('Error: ' + response.statusText);
@@ -74,8 +76,11 @@ function displayCurrentWeather (nameOfCity, currentWeather, dailyUVI) {
     var divContainerEl = document.querySelector('#currentWeather');
     var cityNameDateEl = document.createElement('h5');
     cityNameDateEl.classList = 'card-title';
-    var today = moment().format("MMMM Do, YYYY");
+    var today = moment().format("MM/DD/YY");
     cityNameDateEl.textContent = nameOfCity + " (" + today + ")";
+
+    var imgIconEl = document.createElement('img');
+    imgIconEl.setAttribute('src', `http://openweathermap.org/img/w/${currentWeather.weather[0].icon}.png`);
 
     var temperatureEl = document.createElement('p');
     temperatureEl.classList = 'card-text';
@@ -104,6 +109,7 @@ function displayCurrentWeather (nameOfCity, currentWeather, dailyUVI) {
     uvColorEl.textContent = dailyUVI;
 
     divContainerEl.appendChild(cityNameDateEl);
+    cityNameDateEl.appendChild(imgIconEl);
     divContainerEl.appendChild(temperatureEl);
     divContainerEl.appendChild(humidityEl);
     divContainerEl.appendChild(windSpeedEl);
@@ -111,7 +117,49 @@ function displayCurrentWeather (nameOfCity, currentWeather, dailyUVI) {
     uvIndexEl.appendChild(uvColorEl);
 };
 
+function displayFiveDayForecast (dailyWeatherArray) {
 
+    var fiveDayContainerRowEl = document.querySelector('#fiveDayContainerRow');
+
+    for (var i = 1; i < 6; i++) {
+
+        //Display five-day forecast cards
+        var displayDate = moment.unix(dailyWeatherArray[i].sunset).format("MM/DD/YY");
+
+        var outerDivEl = document.createElement('div');
+        outerDivEl.classList = 'col';
+        
+        var divCardEl = document.createElement('div');
+        divCardEl.classList = 'card bg-blue fiveDayWidth';
+
+        var divCardBodyEl = document.createElement('div');
+        divCardBodyEl.classList = 'card-body';
+
+        var h5DateEl = document.createElement('h5');
+        h5DateEl.classList = 'card-title';
+        h5DateEl.textContent = displayDate;
+
+        var imgIconEl = document.createElement('img');
+        imgIconEl.setAttribute('src', `http://openweathermap.org/img/w/${dailyWeatherArray[i].weather[0].icon}.png`)
+
+        var tempEl = document.createElement('p');
+        tempEl.classList = 'card-text';
+        tempEl.textContent = "Temp: " + dailyWeatherArray[i].temp.day + " \u00B0F";
+
+        var humidEl = document.createElement('p');
+        humidEl.classList = 'card-text';
+        humidEl.textContent = "Humidity: " + dailyWeatherArray[i].humidity + "%";
+
+        fiveDayContainerRowEl.appendChild(outerDivEl);
+        outerDivEl.appendChild(divCardEl);
+        divCardEl.appendChild(divCardBodyEl);
+        divCardBodyEl.appendChild(h5DateEl);
+        divCardBodyEl.appendChild(imgIconEl);
+        divCardBodyEl.appendChild(tempEl);
+        divCardBodyEl.appendChild(humidEl);
+
+    }
+};
 
 
 searchBtnEl.addEventListener('click', buttonClickHandler);

@@ -10,7 +10,7 @@
 </head>
 <body>
     <header>
-        <!-- As a heading -->
+        <!-- Heading -->
         <nav class="navbar navbar-dark bg-dark">
             <div class="container-fluid" style="justify-content: center;"">
                 <span class="navbar-brand mb-0 h1">Weather Dashboard</span>
@@ -24,8 +24,8 @@
               <div class="col">
                 <h3>Search for a City:</h3>
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="City Name" aria-label="City Name" aria-describedby="button-addon2">
-                        <button class="btn btn-outline-secondary" type="button" id="button-addon2">Search</button>
+                        <input id="cityName" type="text" class="form-control" placeholder="City Name" aria-label="City Name" aria-describedby="button-addon2">
+                        <button class="btn btn-outline-secondary" type="button" id="searchBtn">Search</button>
                     </div>
               </div>
               
@@ -33,12 +33,7 @@
                     <div class="row">
                         <div class="col-10">
                             <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Atlanta (8/15/2019) giant current weather box</h5>
-                                    <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                                    <a href="#" class="card-link">Card link</a>
-                                    <a href="#" class="card-link">Another link</a>
+                                <div id = "currentWeather" class="card-body">
                                 </div>
                           </div>
                         </div>
@@ -117,5 +112,7 @@
     
     <!-- BootStrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+    <script src="./assets/js/script.js"></script>
 </body>
 </html>

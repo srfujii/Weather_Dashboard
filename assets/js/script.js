@@ -75,6 +75,10 @@ function displayCurrentWeather (nameOfCity, currentWeather, dailyUVI) {
 
     var divContainerEl = document.querySelector('#currentWeather');
     divContainerEl.innerHTML = "";  // Clear out before display new information
+
+    var divCardBodyEl = document.createElement('div');
+    divCardBodyEl.classList = 'card-body';
+
     var cityNameDateEl = document.createElement('h5');
     cityNameDateEl.classList = 'card-title';
     var today = moment().format("MM/DD/YY");
@@ -109,12 +113,13 @@ function displayCurrentWeather (nameOfCity, currentWeather, dailyUVI) {
     }
     uvColorEl.textContent = dailyUVI;
 
-    divContainerEl.appendChild(cityNameDateEl);
+    divContainerEl.appendChild(divCardBodyEl);
+    divCardBodyEl.appendChild(cityNameDateEl);
     cityNameDateEl.appendChild(imgIconEl);
-    divContainerEl.appendChild(temperatureEl);
-    divContainerEl.appendChild(humidityEl);
-    divContainerEl.appendChild(windSpeedEl);
-    divContainerEl.appendChild(uvIndexEl);
+    divCardBodyEl.appendChild(temperatureEl);
+    divCardBodyEl.appendChild(humidityEl);
+    divCardBodyEl.appendChild(windSpeedEl);
+    divCardBodyEl.appendChild(uvIndexEl);
     uvIndexEl.appendChild(uvColorEl);
 };
 

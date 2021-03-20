@@ -74,6 +74,7 @@ function getWeatherData (cityName) {
 function displayCurrentWeather (nameOfCity, currentWeather, dailyUVI) {
 
     var divContainerEl = document.querySelector('#currentWeather');
+    divContainerEl.innerHTML = "";  // Clear out before display new information
     var cityNameDateEl = document.createElement('h5');
     cityNameDateEl.classList = 'card-title';
     var today = moment().format("MM/DD/YY");
@@ -120,6 +121,13 @@ function displayCurrentWeather (nameOfCity, currentWeather, dailyUVI) {
 function displayFiveDayForecast (dailyWeatherArray) {
 
     var fiveDayContainerRowEl = document.querySelector('#fiveDayContainerRow');
+    var fiveDayForecastTitleEl = document.querySelector('#fiveDayForecastTitle');
+    fiveDayContainerRowEl.innerHTML = "";
+    fiveDayForecastTitleEl.innerHTML = "";
+    
+    var fiveDayTitleEl = document.createElement('h3');
+    fiveDayTitleEl.textContent = "Five Day Forecast: ";
+    fiveDayForecastTitleEl.appendChild(fiveDayTitleEl);
 
     for (var i = 1; i < 6; i++) {
 

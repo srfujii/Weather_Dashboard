@@ -2,6 +2,7 @@
 
 var cityNameEl = document.querySelector('#cityName');
 var searchBtnEl = document.querySelector('#searchBtn');
+var cityListContainerEl = document.querySelector('#cityList');
 var cityName;
 var cityLat;
 var cityLon;
@@ -32,13 +33,31 @@ var buttonClickHandler = function (event) {
 
   if (cityName) {
     getWeatherData(cityName);
-
-    // repoContainerEl.textContent = '';
-    // nameInputEl.value = '';
   } else {
     alert('Please enter a valid city name');
   }
 };
+
+var listContainerClickHandler = function (event) {
+
+    event.preventDefault();
+
+    console.log("We clicked a city name button.");
+    console.log(event.target.tagname);
+    console.log(event);
+
+    if (event.target.nodeName === "BUTTON") {
+
+        console.log("We clicked a city name.");
+        cityName = event.target.innerHTML;
+        console.log("City name is: " + cityName);
+        cityWeatherObject = JSON.parse(localStorage.getItem(`${cityName}`));
+        displayCurrentWeather();
+        displayFiveDayForecast();
+    }
+
+
+}
 
 // Function takes in city name, then calls getLatitudeLongitude to create a city object we can use for more precise call
 function getWeatherData (cityName) {
@@ -67,8 +86,18 @@ function getWeatherData (cityName) {
                     if (response.ok) {
                         response.json().then(function (data) {
                             console.log(data);
-                            setWeatherObjectVals(cityName, data.current, data.daily[0].uvi);
-                            setFiveDayObjectVals(cityName, data.daily);
+
+                            // City data not in localStorage, create and display new data object
+                            if (localStorage.getItem(`${cityName}`) === null) {
+                                setWeatherObjectVals(cityName, data.current, data.daily[0].uvi);
+                                setFiveDayObjectVals(cityName, data.daily);
+                                addCityToList(cityName);
+                                localStorage.setItem(`${cityName}`, JSON.stringify(cityWeatherObject));
+                            } else {
+                                // Retrieve from localStorage and display
+                                cityWeatherObject = JSON.parse(localStorage.getItem(`${cityName}`));
+                                console.log("Found in local storage.");
+                            }
                             displayCurrentWeather();
                             displayFiveDayForecast();
                         });
@@ -89,6 +118,14 @@ function getWeatherData (cityName) {
       });
     
 };
+
+function addCityToList (cityName) {
+
+    var buttonEl = document.createElement('button');
+    buttonEl.classList = 'list-group-item list-group-item-action';
+    buttonEl.textContent = cityName;
+    cityListContainerEl.appendChild(buttonEl);
+}
 
 function setWeatherObjectVals (nameofCity, currentWeather, dailyUVI) {
     cityWeatherObject.cityName = nameofCity;
@@ -271,3 +308,4 @@ function storeCityData (e) {
 
 
 searchBtnEl.addEventListener('click', buttonClickHandler);
+cityListContainerEl.addEventListener('click', listContainerClickHandler);

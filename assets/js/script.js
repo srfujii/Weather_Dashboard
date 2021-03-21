@@ -5,6 +5,24 @@ var searchBtnEl = document.querySelector('#searchBtn');
 var cityName;
 var cityLat;
 var cityLon;
+var cityWeatherObject = {
+    cityName: "",
+    current: {
+        date: "",
+        iconURL: "",
+        temp: "",
+        humidity: "",
+        windspeed: "",
+        uvi: ""
+    },
+    dailyArray: [{date: "", iconURL: "", temp: "", humidity: ""}, 
+    {date: "", iconURL: "", temp: "", humidity: ""},
+    {date: "", iconURL: "", temp: "", humidity: ""},
+    {date: "", iconURL: "", temp: "", humidity: ""},
+    {date: "", iconURL: "", temp: "", humidity: ""},
+    {date: "", iconURL: "", temp: "", humidity: ""}]
+}
+
 
 // CALLED FIRST, then CALLS GETWEATHERDATA, passes in city name user typed in
 var buttonClickHandler = function (event) {
@@ -49,8 +67,10 @@ function getWeatherData (cityName) {
                     if (response.ok) {
                         response.json().then(function (data) {
                             console.log(data);
-                            displayCurrentWeather(cityName, data.current, data.daily[0].uvi);
-                            displayFiveDayForecast(data.daily);
+                            setWeatherObjectVals(cityName, data.current, data.daily[0].uvi);
+                            setFiveDayObjectVals(cityName, data.daily);
+                            displayCurrentWeather();
+                            displayFiveDayForecast();
                         });
                     } else {
                         alert('Error: ' + response.statusText);
@@ -70,8 +90,38 @@ function getWeatherData (cityName) {
     
 };
 
+function setWeatherObjectVals (nameofCity, currentWeather, dailyUVI) {
+    cityWeatherObject.cityName = nameofCity;
+    cityWeatherObject.current.date = moment().format("MM/DD/YY");
+    cityWeatherObject.current.iconURL = `http://openweathermap.org/img/w/${currentWeather.weather[0].icon}.png`;
+    cityWeatherObject.current.temp = "Temperature: " + currentWeather.temp + " \u00B0F";
+    cityWeatherObject.current.humidity = "Humidity: " + currentWeather.humidity + "%";
+    cityWeatherObject.current.windspeed = "Wind Speed: " + currentWeather.wind_speed + " MPH";
+    cityWeatherObject.current.uvi = dailyUVI;
+}
 
-function displayCurrentWeather (nameOfCity, currentWeather, dailyUVI) {
+function setFiveDayObjectVals (nameofCity, dailyWeatherArray){
+
+    for (var i = 1; i < 6; i++) {
+
+        cityWeatherObject.dailyArray[i].date = moment.unix(dailyWeatherArray[i].sunset).format("MM/DD/YY");
+        cityWeatherObject.dailyArray[i].iconURL = `http://openweathermap.org/img/w/${dailyWeatherArray[i].weather[0].icon}.png`;
+        cityWeatherObject.dailyArray[i].temp = "Temp: " + dailyWeatherArray[i].temp.day + " \u00B0F";
+        cityWeatherObject.dailyArray[i].humidity = "Humidity: " + dailyWeatherArray[i].humidity + "%";
+
+    }
+}
+
+function displayCurrentWeather () {
+
+    console.log(cityWeatherObject.cityName);
+    console.log(cityWeatherObject.current.date);
+    console.log(cityWeatherObject.current.iconURL);
+    console.log(cityWeatherObject.current.temp);
+    console.log(cityWeatherObject.current.humidity);
+    console.log(cityWeatherObject.current.windspeed);
+    console.log(cityWeatherObject.current.uvi);
+
 
     var divContainerEl = document.querySelector('#currentWeather');
     divContainerEl.innerHTML = "";  // Clear out before display new information
@@ -84,37 +134,37 @@ function displayCurrentWeather (nameOfCity, currentWeather, dailyUVI) {
 
     var cityNameDateEl = document.createElement('h3');
     cityNameDateEl.classList = 'card-title';
-    var today = moment().format("MM/DD/YY");
-    cityNameDateEl.textContent = nameOfCity + " (" + today + ")";
+    var today = cityWeatherObject.current.date;
+    cityNameDateEl.textContent = cityWeatherObject.cityName + " (" + today + ")";
 
     var imgIconEl = document.createElement('img');
-    imgIconEl.setAttribute('src', `http://openweathermap.org/img/w/${currentWeather.weather[0].icon}.png`);
+    imgIconEl.setAttribute('src', cityWeatherObject.current.iconURL);
 
     var temperatureEl = document.createElement('p');
     temperatureEl.classList = 'card-text';
-    temperatureEl.textContent = "Temperature: " + currentWeather.temp + " \u00B0F";
+    temperatureEl.textContent = cityWeatherObject.current.temp;
 
     var humidityEl = document.createElement('p');
     humidityEl.classList = 'card-text';
-    humidityEl.textContent = "Humidity: " + currentWeather.humidity + "%";
+    humidityEl.textContent = cityWeatherObject.current.humidity;
 
     var windSpeedEl = document.createElement('p');
     windSpeedEl.classList = 'card-text';
-    windSpeedEl.textContent = "Wind Speed: " + currentWeather.wind_speed + " MPH";
+    windSpeedEl.textContent = cityWeatherObject.current.windspeed;
 
     var uvIndexEl = document.createElement('p');
     uvIndexEl.classList = 'card-text';
     uvIndexEl.textContent = "UV Index: ";
     var uvColorEl = document.createElement('span');
 
-    if (dailyUVI <= 2) {
+    if (cityWeatherObject.current.uvi <= 2) {
         uvColorEl.classList = 'bg-success p-2 text-white';  // Green
-    } else if (dailyUVI >= 2 && dailyUVI < 6) {
+    } else if ((cityWeatherObject.current.uvi >= 2) && (cityWeatherObject.current.uvi < 6)) {
         uvColorEl.classList = 'bg-warning p-2 text-white';  // Yellow
     } else {
         uvColorEl.classList = 'bg-danger p-2 text-white';   // Red
     }
-    uvColorEl.textContent = dailyUVI;
+    uvColorEl.textContent = cityWeatherObject.current.uvi;
 
     divContainerEl.appendChild(divCardEl);
     divCardEl.appendChild(divCardBodyEl);
@@ -127,7 +177,7 @@ function displayCurrentWeather (nameOfCity, currentWeather, dailyUVI) {
     uvIndexEl.appendChild(uvColorEl);
 };
 
-function displayFiveDayForecast (dailyWeatherArray) {
+function displayFiveDayForecast () {
 
     var fiveDayContainerRowEl = document.querySelector('#fiveDayContainerRow');
     var fiveDayForecastTitleEl = document.querySelector('#fiveDayForecastTitle');
@@ -140,8 +190,14 @@ function displayFiveDayForecast (dailyWeatherArray) {
 
     for (var i = 1; i < 6; i++) {
 
+        console.log(cityWeatherObject.dailyArray[i].date);
+        console.log(cityWeatherObject.dailyArray[i].date);
+        console.log(cityWeatherObject.dailyArray[i].iconURL);
+        console.log(cityWeatherObject.dailyArray[i].temp);
+        console.log(cityWeatherObject.dailyArray[i].humidity);
+
         //Display five-day forecast cards
-        var displayDate = moment.unix(dailyWeatherArray[i].sunset).format("MM/DD/YY");
+        var displayDate = cityWeatherObject.dailyArray[i].date;
 
         var outerDivEl = document.createElement('div');
         outerDivEl.classList = 'col';
@@ -157,15 +213,15 @@ function displayFiveDayForecast (dailyWeatherArray) {
         h5DateEl.textContent = displayDate;
 
         var imgIconEl = document.createElement('img');
-        imgIconEl.setAttribute('src', `http://openweathermap.org/img/w/${dailyWeatherArray[i].weather[0].icon}.png`)
+        imgIconEl.setAttribute('src', cityWeatherObject.dailyArray[i].iconURL);
 
         var tempEl = document.createElement('p');
         tempEl.classList = 'card-text';
-        tempEl.textContent = "Temp: " + dailyWeatherArray[i].temp.day + " \u00B0F";
+        tempEl.textContent = cityWeatherObject.dailyArray[i].temp;
 
         var humidEl = document.createElement('p');
         humidEl.classList = 'card-text';
-        humidEl.textContent = "Humidity: " + dailyWeatherArray[i].humidity + "%";
+        humidEl.textContent = cityWeatherObject.dailyArray[i].humidity;
 
         fiveDayContainerRowEl.appendChild(outerDivEl);
         outerDivEl.appendChild(divCardEl);
@@ -177,6 +233,41 @@ function displayFiveDayForecast (dailyWeatherArray) {
 
     }
 };
+
+function storeCityData (e) {
+
+    e.preventDefault();
+
+    // Sanitize user input
+    highScoreObject.userInitials = document.querySelector("#initials").value.trim();
+    highScoreObject.userScore = score;
+
+    // Make sure they entered *something*
+    if (highScoreObject.userInitials !== "") {
+
+        // Pull old local storage items and store in array
+        // Get stored value from client storage, if it exists
+        var storedScores = JSON.parse(localStorage.getItem("highScores"));
+        
+        if (storedScores == null) {
+            var storedScores = [];
+        } 
+        
+        // Add new score to our array of high scores
+        storedScores.push(highScoreObject);
+        // Stringify and set key in localStorage to storedScores array
+        localStorage.setItem("highScores", JSON.stringify(storedScores));
+        // Disable Submit...only allowed to enter one high score per game
+        submitButton = document.querySelector("#submitButton");
+        submitButton.disabled = true;
+        displayHighScores();
+    } else {
+        alert("Please type your initials.");    // User must enter *something*
+    }
+
+
+
+}
 
 
 searchBtnEl.addEventListener('click', buttonClickHandler);

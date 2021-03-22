@@ -1,13 +1,19 @@
-// 785aad59f51a31c19fdb12b735b526d0
+// Weather Dashhboard JavaScript
+//
+//  This JavaScript powers a weather dashhboard where a user can search for weather information 
+//  by city name. If the city exists, the current weather and the five-day forecast weather is 
+//  displayed for the chosen city. If the user types in an invalid city, an alert is displayed
+//  prompting the user to please enter a valid city name.
 
-var cityNameEl = document.querySelector('#cityName');
-var searchBtnEl = document.querySelector('#searchBtn');
-var cityListContainerEl = document.querySelector('#cityList');
-var cityName;
-var cityLat;
-var cityLon;
-var cityWeatherObject = {
-    cityName: "",
+/*** GLOBAL VARIABLES ***/
+var cityNameEl = document.querySelector('#cityName');               // Reference to city user entered
+var searchBtnEl = document.querySelector('#searchBtn');             // Reference to search button
+var cityListContainerEl = document.querySelector('#cityList');      // Reference to previous city search list
+var cityName;                                                       // Name of city
+var cityLat;                                                        // Latitude
+var cityLon;                                                        // Longitude
+var cityWeatherObject = {                                           // City Weather Object to store in local storage
+    cityName: "",                                                   // Contains current weather info, and
     current: {
         date: "",
         iconURL: "",
@@ -16,7 +22,7 @@ var cityWeatherObject = {
         windspeed: "",
         uvi: ""
     },
-    dailyArray: [{date: "", iconURL: "", temp: "", humidity: ""}, 
+    dailyArray: [{date: "", iconURL: "", temp: "", humidity: ""},   // also an array of daily weather info
     {date: "", iconURL: "", temp: "", humidity: ""},
     {date: "", iconURL: "", temp: "", humidity: ""},
     {date: "", iconURL: "", temp: "", humidity: ""},
@@ -25,95 +31,96 @@ var cityWeatherObject = {
 }
 
 
-// CALLED FIRST, then CALLS GETWEATHERDATA, passes in city name user typed in
+// Function buttonClickHandler: Called first when user enters a city name and clicks the Search button,
+//      Calls getWeatherData and passes in the name of the city the user entered.
 var buttonClickHandler = function (event) {
-  event.preventDefault();
+  event.preventDefault();                   // Prevent default action
 
-  cityName = cityNameEl.value.trim();
+  cityName = cityNameEl.value.trim();       // Sanitize user input
 
   if (cityName) {
-      // Convert to Title Case e.g. San Francisco not sAn francisco
-    cityName = toTitleCase(cityName);
-    getWeatherData(cityName);
+    cityName = toTitleCase(cityName);       // Convert to Title Case e.g. San Francisco not sAn francisco
+    getWeatherData(cityName);               // Call getWeatherData with the sanitized city name
   } else {
     alert('Please enter a valid city name');
   }
 };
 
+// function toTitleCase: Called by the Search button click event handler,
+//      Returns city name in title case form (e.g. San Francisco not sAn francisCO
 function toTitleCase(str) {
     return str.replace(/\w\S*/g, function(txt){
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
 }
 
+//  function listContainerClickHandler: when user clicks on a previous city name
+//      stored in localStorage, this function retrieves the city weather object
+//      from local storage and displays the current weather and five-day forecast.
 var listContainerClickHandler = function (event) {
 
     event.preventDefault();
 
-    console.log("We clicked a city name button.");
-    console.log(event.target.tagname);
-    console.log(event);
-
+    // Make sure we clicked the city button, then set city name and city weather 
+    // object to that city's information from local storage. 
     if (event.target.nodeName === "BUTTON") {
-
-        console.log("We clicked a city name.");
         cityName = event.target.innerHTML;
-        console.log("City name is: " + cityName);
         cityWeatherObject = JSON.parse(localStorage.getItem(`${cityName}`));
         displayCurrentWeather();
         displayFiveDayForecast();
     }
-
-
 }
 
-// Function takes in city name, then calls getLatitudeLongitude to create a city object we can use for more precise call
+// Function getWeatherData: Called by the Search Button click handler after user
+//      enters a city name. Checks to see whether city weather data already exists
+//      in local storage. If so, retrieves data from local storage and calls displayCurrentWeather
+//      and displayFiveDayForecast weather to show the data on the website.
+//      If city name is NOT found in local storage, composes two fetch requests to 
+//      get weather data from the Open Weather API. Fetches the latitude and longitude of the city and 
+//      displays an alert if the city is not found (e.g. city name of "weoairjeojo").
+//      If a valid city name, performs another fetch to retrieve the weather information for
+//      that city. Calls display functions to display the data.
 function getWeatherData (cityName) {
 
-    var apiUrl = 'http://api.openweathermap.org/geo/1.0/direct?q=' + cityName + '&limit=1&appid=785aad59f51a31c19fdb12b735b526d0';
+    // Check to see if city is already stored in local storage, if so, retrieve & display
+    if (localStorage.getItem(`${cityName}`) !== null) {
+        cityWeatherObject = JSON.parse(localStorage.getItem(`${cityName}`));
+        displayCurrentWeather();
+        displayFiveDayForecast();
+    } else {
+        // Our first fetch request to obtain latitude and longitude for city
+        var apiUrl = 'http://api.openweathermap.org/geo/1.0/direct?q=' + cityName + '&limit=1&appid=785aad59f51a31c19fdb12b735b526d0';
 
-    // Request the latitude and longitude for desired city from OpenWeather
-    fetch(apiUrl)
-      .then(function (response) {
-        if (response.ok) {
-          response.json().then(function (data) {
-           
-            if (data == "") {
-                alert('Error: ' + 'You must enter a valid city name. Please try again.');
-                return;
-            }
-                cityLat = data[0].lat;
-                cityLon = data[0].lon;
-            
-                console.log(cityLat);
-                console.log(cityLon);
-                console.log(cityName);
+        fetch(apiUrl)
+        .then(function (response) {
+            if (response.ok) {
+            response.json().then(function (data) {
+                // If Open Weather returns empty data object, alert the user and go back
+                if (data == "") {
+                    alert('Error: ' + 'You must enter a valid city name. Please try again.');
+                    return;
+                }
+                cityLat = data[0].lat;      // Set city latitude
+                cityLon = data[0].lon;      // Set city longitude
 
+                // Our second fetch request to obtain city weather data using latitude and longitude
                 var apiUrl = 'https://api.openweathermap.org/data/2.5/onecall?lat=' + cityLat + '&lon=' + cityLon + '&units=imperial&exclude=minutely,hourly,alerts&appid=785aad59f51a31c19fdb12b735b526d0';
-  
-                console.log("API URL: " + apiUrl);
-            
+        
                 fetch(apiUrl)
                     .then(function (response) {
                     if (response.ok) {
                         response.json().then(function (data) {
-                            console.log(data);
-
+                            
+                            // If Open Weather returns empty data object, alert the user and go back
                             if (data == "") {
                                 alert('Error: ' + 'We could not find that city, please try again.');
                                 return;
                             }
-                            // City data not in localStorage, create and display new data object
-                            if (localStorage.getItem(`${cityName}`) === null) {
-                                setWeatherObjectVals(cityName, data.current, data.daily[0].uvi);
-                                setFiveDayObjectVals(cityName, data.daily);
-                                addCityToList(cityName);
-                                localStorage.setItem(`${cityName}`, JSON.stringify(cityWeatherObject));
-                            } else {
-                                // Retrieve from localStorage and display
-                                cityWeatherObject = JSON.parse(localStorage.getItem(`${cityName}`));
-                                console.log("Found in local storage.");
-                            }
+                            // Create and display new data object
+                            setWeatherObjectVals(cityName, data.current, data.daily[0].uvi);
+                            setFiveDayObjectVals(cityName, data.daily);
+                            addCityToList(cityName);
+                            localStorage.setItem(`${cityName}`, JSON.stringify(cityWeatherObject));
                             displayCurrentWeather();
                             displayFiveDayForecast();
                         });
@@ -124,17 +131,18 @@ function getWeatherData (cityName) {
                     .catch(function (error) {
                     alert('Unable to connect to Open Weather Map');
                     });
-          });
-        } else {
-          alert('Error: ' + response.statusText);
-        }
-      })
-      .catch(function (error) {
-        alert('Unable to connect to Open Weather Map');
-      });
-    
+            });
+            } else {
+            alert('Error: ' + response.statusText);
+            }
+        })
+        .catch(function (error) {
+            alert('Unable to connect to Open Weather Map');
+        });
+    }
 };
 
+/*** Function addCityToList: Creates new city list item below search input box on web page ***/
 function addCityToList (cityName) {
 
     var buttonEl = document.createElement('button');
@@ -143,6 +151,7 @@ function addCityToList (cityName) {
     cityListContainerEl.appendChild(buttonEl);
 }
 
+/*** Function setWeatherObjectVals: sets our current city weather object values ***/
 function setWeatherObjectVals (nameofCity, currentWeather, dailyUVI) {
     cityWeatherObject.cityName = nameofCity;
     cityWeatherObject.current.date = moment().format("MM/DD/YY");
@@ -153,28 +162,20 @@ function setWeatherObjectVals (nameofCity, currentWeather, dailyUVI) {
     cityWeatherObject.current.uvi = dailyUVI;
 }
 
+/*** Function setFiveDayObjectVals: Sets our five-day city weather object values ***/
 function setFiveDayObjectVals (nameofCity, dailyWeatherArray){
 
+    // Set days 1 - 5 only
     for (var i = 1; i < 6; i++) {
-
         cityWeatherObject.dailyArray[i].date = moment.unix(dailyWeatherArray[i].sunset).format("MM/DD/YY");
         cityWeatherObject.dailyArray[i].iconURL = `http://openweathermap.org/img/w/${dailyWeatherArray[i].weather[0].icon}.png`;
         cityWeatherObject.dailyArray[i].temp = "Temp: " + dailyWeatherArray[i].temp.day + " \u00B0F";
         cityWeatherObject.dailyArray[i].humidity = "Humidity: " + dailyWeatherArray[i].humidity + "%";
-
     }
 }
 
+/*** Function displayCurrentWeather: Displays current city weather information on web page  ***/
 function displayCurrentWeather () {
-
-    console.log(cityWeatherObject.cityName);
-    console.log(cityWeatherObject.current.date);
-    console.log(cityWeatherObject.current.iconURL);
-    console.log(cityWeatherObject.current.temp);
-    console.log(cityWeatherObject.current.humidity);
-    console.log(cityWeatherObject.current.windspeed);
-    console.log(cityWeatherObject.current.uvi);
-
 
     var divContainerEl = document.querySelector('#currentWeather');
     divContainerEl.innerHTML = "";  // Clear out before display new information
@@ -210,6 +211,7 @@ function displayCurrentWeather () {
     uvIndexEl.textContent = "UV Index: ";
     var uvColorEl = document.createElement('span');
 
+    // Set our UVI background color according to UVI number
     if (cityWeatherObject.current.uvi <= 2) {
         uvColorEl.classList = 'bg-success p-2 text-white';  // Green
     } else if ((cityWeatherObject.current.uvi >= 2) && (cityWeatherObject.current.uvi < 6)) {
@@ -230,6 +232,7 @@ function displayCurrentWeather () {
     uvIndexEl.appendChild(uvColorEl);
 };
 
+/*** Function displayFiveDayForecast: Displays the five-day forecast in individual card elements on the web page ***/
 function displayFiveDayForecast () {
 
     var fiveDayContainerRowEl = document.querySelector('#fiveDayContainerRow');
@@ -241,13 +244,8 @@ function displayFiveDayForecast () {
     fiveDayTitleEl.textContent = "Five Day Forecast: ";
     fiveDayForecastTitleEl.appendChild(fiveDayTitleEl);
 
+    // Loop through days 1 - 5
     for (var i = 1; i < 6; i++) {
-
-        console.log(cityWeatherObject.dailyArray[i].date);
-        console.log(cityWeatherObject.dailyArray[i].date);
-        console.log(cityWeatherObject.dailyArray[i].iconURL);
-        console.log(cityWeatherObject.dailyArray[i].temp);
-        console.log(cityWeatherObject.dailyArray[i].humidity);
 
         //Display five-day forecast cards
         var displayDate = cityWeatherObject.dailyArray[i].date;
@@ -287,41 +285,6 @@ function displayFiveDayForecast () {
     }
 };
 
-function storeCityData (e) {
-
-    e.preventDefault();
-
-    // Sanitize user input
-    highScoreObject.userInitials = document.querySelector("#initials").value.trim();
-    highScoreObject.userScore = score;
-
-    // Make sure they entered *something*
-    if (highScoreObject.userInitials !== "") {
-
-        // Pull old local storage items and store in array
-        // Get stored value from client storage, if it exists
-        var storedScores = JSON.parse(localStorage.getItem("highScores"));
-        
-        if (storedScores == null) {
-            var storedScores = [];
-        } 
-        
-        // Add new score to our array of high scores
-        storedScores.push(highScoreObject);
-        // Stringify and set key in localStorage to storedScores array
-        localStorage.setItem("highScores", JSON.stringify(storedScores));
-        // Disable Submit...only allowed to enter one high score per game
-        submitButton = document.querySelector("#submitButton");
-        submitButton.disabled = true;
-        displayHighScores();
-    } else {
-        alert("Please type your initials.");    // User must enter *something*
-    }
-
-
-
-}
-
-
+/*** Event Listeners ***/
 searchBtnEl.addEventListener('click', buttonClickHandler);
 cityListContainerEl.addEventListener('click', listContainerClickHandler);

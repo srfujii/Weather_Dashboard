@@ -89,7 +89,7 @@ function getWeatherData (cityName) {
         displayFiveDayForecast();
     } else {
         // Our first fetch request to obtain latitude and longitude for city
-        var apiUrl = 'http://api.openweathermap.org/geo/1.0/direct?q=' + cityName + '&limit=1&appid=785aad59f51a31c19fdb12b735b526d0';
+        var apiUrl = 'https://api.openweathermap.org/geo/1.0/direct?q=' + cityName + '&limit=1&appid=785aad59f51a31c19fdb12b735b526d0';
 
         fetch(apiUrl)
         .then(function (response) {

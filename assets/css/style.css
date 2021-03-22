@@ -1,3 +1,8 @@
 .fiveDayWidth {
     width: 10rem;
 }
+
+/*** Ensure clicks inside our buttons are always for the button itself ***/
+button > * {
+    pointer-events: none;
+  }

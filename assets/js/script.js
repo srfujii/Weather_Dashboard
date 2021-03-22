@@ -32,11 +32,19 @@ var buttonClickHandler = function (event) {
   cityName = cityNameEl.value.trim();
 
   if (cityName) {
+      // Convert to Title Case e.g. San Francisco not sAn francisco
+    cityName = toTitleCase(cityName);
     getWeatherData(cityName);
   } else {
     alert('Please enter a valid city name');
   }
 };
+
+function toTitleCase(str) {
+    return str.replace(/\w\S*/g, function(txt){
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+}
 
 var listContainerClickHandler = function (event) {
 
@@ -70,6 +78,10 @@ function getWeatherData (cityName) {
         if (response.ok) {
           response.json().then(function (data) {
            
+            if (data == "") {
+                alert('Error: ' + 'You must enter a valid city name. Please try again.');
+                return;
+            }
                 cityLat = data[0].lat;
                 cityLon = data[0].lon;
             
@@ -87,6 +99,10 @@ function getWeatherData (cityName) {
                         response.json().then(function (data) {
                             console.log(data);
 
+                            if (data == "") {
+                                alert('Error: ' + 'We could not find that city, please try again.');
+                                return;
+                            }
                             // City data not in localStorage, create and display new data object
                             if (localStorage.getItem(`${cityName}`) === null) {
                                 setWeatherObjectVals(cityName, data.current, data.daily[0].uvi);
